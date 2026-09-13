@@ -24,6 +24,7 @@ class GetPraysCommand : CliktCommand(name = "prays") {
         }
 
         if (prayId == null && searchPray == null) {
+            echo()
             echo("Todas as oração")
             echo()
             praysList.forEach { echo("${it.id} - ${it.title}") }
@@ -33,6 +34,7 @@ class GetPraysCommand : CliktCommand(name = "prays") {
             praysList
                 .find { it.id == pray.toInt() }
                 ?.let {
+                    echo()
                     echo("Oração: ${it.title}")
                     echo()
                     echo(it.body)
@@ -42,18 +44,19 @@ class GetPraysCommand : CliktCommand(name = "prays") {
                 }
         }
 
-        searchPray
-            ?.let { possiblyPrayTitle ->
+        searchPray?.let { possiblyPrayTitle ->
                 praysList
                     .filter { it.title.contains(possiblyPrayTitle, ignoreCase = true) }
-            }
-            ?.let { praysList ->
-                echo("Orações encontradas")
-                echo()
-                praysList.forEach { echo("${it.id} - ${it.title}") }
-            }
-            ?: {
-                UsageError("Nenhuma oração foi encontrada.")
+                    .let { praysList ->
+                        if (praysList.isNotEmpty()) {
+                            echo()
+                            echo(message = if (praysList.size > 1) "Orações encontradas" else "Oração encontrada")
+                            echo()
+                            praysList.forEach { echo("${it.id} - ${it.title}") }
+                        } else {
+                            UsageError("Nenhuma oração foi encontrada.")
+                        }
+                    }
             }
     }
 }
@@ -69,15 +72,17 @@ class GetSongsCommand : CliktCommand(name = "songs") {
         }
 
         if (songOption == null && searchSong == null) {
+            echo()
             echo("Todos os cânticos")
             echo("")
-            songsList.forEach { echo("${it.id} - ${it.title}") }
+            songsList.forEach { echo("${it.number} - ${it.title}") }
         }
 
         songOption?.let { songNum ->
             songsList
                 .find { it.number == songNum }
                 ?.let {
+                    echo()
                     echo("Cântico: ${it.number} - ${it.title}")
                     echo()
                     echo(it.body)
@@ -89,12 +94,17 @@ class GetSongsCommand : CliktCommand(name = "songs") {
 
         searchSong?.let { songTitle ->
             songsList
-                .filter { it.title.contains(songTitle)}
-                ?.let { foundSongs ->
-                    echo("Cânticos encontrados")
-                    echo()
-                    foundSongs.forEach { song ->
-                        echo("${song.number} - ${song.title}")
+                .filter { it.title.contains(songTitle, ignoreCase = true)}
+                .let { foundSongs ->
+                    if (foundSongs.isNotEmpty()) {
+                        echo()
+                        echo(message = if (foundSongs.size > 1) "Cânticos encontrados" else "Cântico encontrado")
+                        echo()
+                        foundSongs.forEach { song ->
+                            echo("${song.number} - ${song.title}")
+                        }
+                    } else {
+                        UsageError("Nenhum cântico foi encontrado")
                     }
                 }
         }
